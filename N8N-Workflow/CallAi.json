@@ -1,0 +1,440 @@
+{
+  "name": "CallAi",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "ale02.sacchi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ale02.sacchi@gmail.com"
+        },
+        "timeMin": "={{ $json.body.RequestMeetDateTime }}",
+        "timeMax": "={{ DateTime.fromISO($json.body.RequestMeetDateTime).plus({ hours: 1 }).toISO() }}",
+        "options": {
+          "timezone": {
+            "__rl": true,
+            "value": "Europe/Rome",
+            "mode": "list",
+            "cachedResultName": "Europe/Rome"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        -160
+      ],
+      "id": "d465a32e-d419-4472-b098-a42da13cb68e",
+      "name": "Get availability in a calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Prpeqj6acLPIJrZF",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "ale02.sacchi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ale02.sacchi@gmail.com"
+        },
+        "start": "={{ $('ScheduleMeeting').item.json.body.RequestMeetDateTime }}",
+        "end": "={{ DateTime.fromISO($('ScheduleMeeting').item.json.body.RequestMeetDateTime).plus({ hours: 1 }).toISO() }}",
+        "additionalFields": {
+          "description": "={{ $('ScheduleMeeting').item.json.body.MeetDescription }}",
+          "summary": "={{ $('ScheduleMeeting').item.json.body.MeetTitle }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        -16
+      ],
+      "id": "4b428962-5485-4b91-8013-545c88481d42",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Prpeqj6acLPIJrZF",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "ale02.sacchi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ale02.sacchi@gmail.com"
+        },
+        "timeMin": "={{ $json.body.RequestMeetDateTime }}",
+        "timeMax": "={{ DateTime.fromISO($json.body.RequestMeetDateTime).plus({ hours: 1 }).toISO() }}",
+        "options": {
+          "timezone": {
+            "__rl": true,
+            "value": "Europe/Rome",
+            "mode": "list",
+            "cachedResultName": "Europe/Rome"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "7397f0f8-4cf8-4fbd-8c89-a639f1458ef5",
+      "name": "Get availability in a calendar1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Prpeqj6acLPIJrZF",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "105b0538-6ac2-47b7-81d1-312ac6f065f2",
+              "leftValue": "={{ $json.available }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        0
+      ],
+      "id": "c37477be-35bc-4253-a52f-18760d8f2171",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"AvailableHour\": \"{{ $json.available }}\"\n} ",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        112,
+        -160
+      ],
+      "id": "409d947f-450d-4c05-a38c-7bb6e5a1fa92",
+      "name": "Respond CheckCalendar"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ScheduleMeeting",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "0db2e45f-95ab-4583-8a5f-737a4b67034c",
+      "name": "ScheduleMeeting",
+      "webhookId": "3b9cd4c2-d9f4-4c7c-975a-e05011972d5d"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"BookedMeet\": \"true\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        -16
+      ],
+      "id": "34931a1c-df17-4af1-8175-35256c28b79b",
+      "name": "Respond to ScheduleMeeting"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"BookedMeet\": \"false\"\n}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "=CallBooked",
+                "value": "=false"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        320,
+        160
+      ],
+      "id": "57401b49-2a73-414d-beba-4df0a44a4978",
+      "name": "Respond to ScheduleMeeting1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "ale02.sacchi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ale02.sacchi@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $json.body.RequestMeetDate }}T09:00:00+01:00",
+        "timeMax": "={{ $json.body.RequestMeetDate }}T18:00:00+01:00",
+        "options": {
+          "timeZone": {
+            "__rl": true,
+            "value": "Europe/Rome",
+            "mode": "list",
+            "cachedResultName": "Europe/Rome"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        -304
+      ],
+      "id": "08a28883-6616-455e-9333-2b9993ab87da",
+      "name": "Get many events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Prpeqj6acLPIJrZF",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "CheckCalendar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        -160
+      ],
+      "id": "cab5b833-a0d4-4bfd-b59e-4ad3ef17fbcd",
+      "name": "CheckCalendar",
+      "webhookId": "3b9cd4c2-d9f4-4c7c-975a-e05011972d5d"
+    },
+    {
+      "parameters": {
+        "path": "CheckDayAvability",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        -304
+      ],
+      "id": "66271572-14f4-4ee3-ab1c-0ae53804e2fb",
+      "name": "CheckDayAvability",
+      "webhookId": "3b9cd4c2-d9f4-4c7c-975a-e05011972d5d"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"BusyTime\": {{ JSON.stringify($json.data.map(e => ({\n    from: e.start.dateTime,\n    to: e.end.dateTime\n  }))) }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        384,
+        -304
+      ],
+      "id": "77955a59-2031-456e-bb28-598755dc217b",
+      "name": "Respond CheckDayAvability"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -304
+      ],
+      "id": "569845d2-917a-42f2-92c1-86256ebfc18c",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get availability in a calendar": {
+      "main": [
+        [
+          {
+            "node": "Respond CheckCalendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Respond to ScheduleMeeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability in a calendar1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to ScheduleMeeting1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScheduleMeeting": {
+      "main": [
+        [
+          {
+            "node": "Get availability in a calendar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to ScheduleMeeting": {
+      "main": [
+        []
+      ]
+    },
+    "CheckCalendar": {
+      "main": [
+        [
+          {
+            "node": "Get availability in a calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckDayAvability": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond CheckDayAvability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f2e91d82-7c33-4a75-822b-982a1d2d44dd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "183e12731e577ec2c42af2a1fb12bac37776f55a70c0b3c75e8471196e8d5211"
+  },
+  "id": "VTxKbDkqFTpnPYPn9SF00",
+  "tags": []
+}
